@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"math/big"
@@ -32,11 +33,12 @@ type ProcNetTcp struct {
 }
 
 // returns a new tcp connection
-func Connections(filepath string) (*Tcp, error) {
+func (t *Tcp) NewTcp(filepath string) (*Tcp, string, error) {
 	connectionsRead, err := readProcNetTcpFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	timeStamp := time.Now()
 
 	connections := map[string]ProcNetTcp{}
 	for _, connection := range connectionsRead {
@@ -51,11 +53,34 @@ func Connections(filepath string) (*Tcp, error) {
 			RemotePort:   portRem,
 		}
 	}
-	fmt.Println(connections)
+	newConnections := t.NewConnections(connections, timeStamp)
+
+	//Todo: port scan logic
 
 	return &Tcp{
+		TimeStamp:   timeStamp,
 		Connections: connections,
-	}, nil
+	}, newConnections, nil
+}
+
+// Finds new connections by comparing previous read values with new values
+func (t *Tcp) NewConnections(connections map[string]ProcNetTcp, timeStamp time.Time) string {
+	var conns bytes.Buffer
+	for key, newConn := range connections {
+		_, ok := t.Connections[key]
+		if !ok {
+			conn := fmt.Sprintf(
+				"%v: New connection: %s:%s -> %s:%s\n",
+				timeStamp,
+				newConn.RemoteAdress,
+				newConn.RemotePort,
+				newConn.LocalAdress,
+				newConn.LocalPort,
+			)
+			conns.WriteString(conn)
+		}
+	}
+	return conns.String()
 }
 
 // Reads /proc/net/tcp file

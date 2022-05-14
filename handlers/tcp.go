@@ -8,19 +8,20 @@ import (
 
 const (
 	//PROC_NET_TCP = "/proc/net/tcp"
-	PROC_NET_TCP = "/Users/smarin/workspaces/teleport/scratchpad/proc-net-tcp"
+	PROC_NET_TCP = "/Users/smarin/workspaces/teleport/scratchpad/proc-net-tcp2"
 )
 
 func Tcp() {
-
+	currentTcp := &tcp.Tcp{}
 	for {
-		fmt.Println("Read proc/net/tcp")
-		_, err := tcp.Connections(PROC_NET_TCP)
+		fmt.Println("Finding new connections")
+
+		tcp, connInfo, err := currentTcp.NewTcp(PROC_NET_TCP)
+		currentTcp = tcp
 		if err != nil {
 			fmt.Println(err)
-
 		}
-		time.Sleep(30 * time.Second)
+		fmt.Print(connInfo)
+		time.Sleep(60 * time.Second)
 	}
-
 }
