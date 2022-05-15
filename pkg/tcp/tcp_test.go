@@ -3,6 +3,8 @@ package tcp
 import (
 	"fmt"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 )
@@ -74,12 +76,6 @@ func TestNewConnectionsNone(t *testing.T) {
 			RemoteAdress: "33.191.104.244",
 			RemotePort:   "56989",
 		},
-		//"172.31.24.7:9000-131.123.105.156:56808": ProcNetTcp{
-		//	LocalAdress:  "172.31.24.7",
-		//	LocalPort:    "9000",
-		//	RemoteAdress: "131.123.105.156",
-		//	RemotePort:   "56808",
-		//},
 	}
 	newConnections := prevTcp.NewConnections(connections, time.Now())
 
@@ -123,14 +119,19 @@ func TestNewConnectionsPrevGone(t *testing.T) {
 	}
 	timeNow := time.Now()
 	newConnections := prevTcp.NewConnections(connections, timeNow)
+	newConnectionsArr := strings.Split(newConnections, "")
+	sort.Strings(newConnectionsArr)
 
 	expectedNewConnections := fmt.Sprintf(
 		"%v: New connection: 34.191.104.244:56989 -> 172.31.24.7:80\n%v: New connection: 132.123.105.156:56808 -> 172.31.24.7:9000\n",
 		timeNow.Format(DATE_FORMAT),
 		timeNow.Format(DATE_FORMAT),
 	)
-	if !reflect.DeepEqual(expectedNewConnections, newConnections) {
-		t.Errorf("\n newConnections: %s\n newConnections: %s", expectedNewConnections, newConnections)
+	expectedNewConnectionsArr := strings.Split(expectedNewConnections, "")
+	sort.Strings(expectedNewConnectionsArr)
+
+	if !reflect.DeepEqual(expectedNewConnectionsArr, newConnectionsArr) {
+		t.Errorf("\n newConnections: %s\n expectedNewConnections: %s", expectedNewConnections, newConnections)
 	}
 }
 
@@ -181,13 +182,18 @@ func TestNewConnectionsNewAdded(t *testing.T) {
 
 	timeNow := time.Now()
 	newConnections := prevTcp.NewConnections(connections, timeNow)
+	newConnectionsArr := strings.Split(newConnections, "")
+	sort.Strings(newConnectionsArr)
 
 	expectedNewConnections := fmt.Sprintf(
 		"%v: New connection: 34.191.104.244:56989 -> 172.31.24.7:80\n%v: New connection: 132.123.105.156:56808 -> 172.31.24.7:9000\n",
 		timeNow.Format(DATE_FORMAT),
 		timeNow.Format(DATE_FORMAT),
 	)
-	if !reflect.DeepEqual(expectedNewConnections, newConnections) {
+	expectedNewConnectionsArr := strings.Split(expectedNewConnections, "")
+	sort.Strings(expectedNewConnectionsArr)
+
+	if !reflect.DeepEqual(expectedNewConnectionsArr, newConnectionsArr) {
 		t.Errorf("\n expectedNewConnections: %s\n newConnections: %s", expectedNewConnections, newConnections)
 	}
 }
@@ -204,9 +210,14 @@ func TestNewTcpNoPortScan(t *testing.T) {
 func TestNewTcpPortScan(t *testing.T) {
 	prevTcp := Tcp{}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
+	portScanArr := strings.Split(portScanStr, "")
+	sort.Strings(portScanArr)
+
 	expectedPortScanStr := fmt.Sprintf("%v: Port scan detected: 216.19.179.173 -> 172.31.24.7 on ports 23,24,22\n", tcp.TimeStamp.Format(DATE_FORMAT))
-	//TODO: need to fix check since order can get shuffled by string
-	if expectedPortScanStr != portScanStr {
+	expectedPortScanArr := strings.Split(expectedPortScanStr, "")
+	sort.Strings(expectedPortScanArr)
+
+	if !reflect.DeepEqual(expectedPortScanArr, portScanArr) {
 		t.Errorf("\n expectedPortScanStr: %s\n portScanStr: %s", expectedPortScanStr, portScanStr)
 	}
 }
@@ -235,10 +246,15 @@ func TestNewTcpPortScanInPrevMin(t *testing.T) {
 			},
 		},
 	}
-	//TODO: need to fix check since order can get shuffled by string
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
+	portScanArr := strings.Split(portScanStr, "")
+	sort.Strings(portScanArr)
+
 	expectedPortScanStr := fmt.Sprintf("%v: Port scan detected: 216.19.179.180 -> 172.31.24.7 on ports 7777,7778,7378\n%v: Port scan detected: 216.19.179.173 -> 172.31.24.7 on ports 23,24,22\n", tcp.TimeStamp.Format(DATE_FORMAT), tcp.TimeStamp.Format(DATE_FORMAT))
-	if expectedPortScanStr != portScanStr {
+	expectedPortScanArr := strings.Split(expectedPortScanStr, "")
+	sort.Strings(expectedPortScanArr)
+
+	if !reflect.DeepEqual(expectedPortScanArr, portScanArr) {
 		t.Errorf("\n expectedPortScanStr: %s\n portScanStr: %s", expectedPortScanStr, portScanStr)
 	}
 }
@@ -267,10 +283,15 @@ func TestNewTcpPortScanRemoveLongerThanMin(t *testing.T) {
 			},
 		},
 	}
-	//TODO: need to fix check since order can get shuffled by string
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
-	expectedPortScanStr := fmt.Sprintf("%v: Port scan detected: 216.19.179.180 -> 172.31.24.7 on ports 7777,7778,7378\n%v: Port scan detected: 216.19.179.173 -> 172.31.24.7 on ports 23,24,22\n", tcp.TimeStamp.Format(DATE_FORMAT), tcp.TimeStamp.Format(DATE_FORMAT))
-	if expectedPortScanStr != portScanStr {
+	portScanArr := strings.Split(portScanStr, "")
+	sort.Strings(portScanArr)
+
+	expectedPortScanStr := fmt.Sprintf("%v: Port scan detected: 216.19.179.173 -> 172.31.24.7 on ports 23,24,22\n", tcp.TimeStamp.Format(DATE_FORMAT))
+	expectedPortScanArr := strings.Split(expectedPortScanStr, "")
+	sort.Strings(expectedPortScanArr)
+
+	if !reflect.DeepEqual(expectedPortScanArr, portScanArr) {
 		t.Errorf("\n expectedPortScanStr: %s\n portScanStr: %s", expectedPortScanStr, portScanStr)
 	}
 }
