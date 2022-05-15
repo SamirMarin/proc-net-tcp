@@ -87,8 +87,6 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 	}
 
 	newConnections := t.NewConnections(connections, timeStamp)
-	fmt.Println("test")
-	fmt.Println(portScans)
 
 	portScans = cleanOldPorts(60*time.Second, timeStamp, portScans)
 	currentPortScans := findPortScans(portScans, timeStamp)
@@ -200,7 +198,7 @@ func cleanOldPorts(timeTresh time.Duration, time time.Time, portScans map[string
 		for key, port := range portScan.Ports {
 			timeExpire := time.Add(-timeTresh)
 			if port.TimeStamp.Before(timeExpire) {
-				delete(portScans, key)
+				delete(portScan.Ports, key)
 			}
 		}
 	}

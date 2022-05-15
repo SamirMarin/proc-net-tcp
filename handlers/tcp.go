@@ -8,7 +8,7 @@ import (
 
 const (
 	//PROC_NET_TCP = "/proc/net/tcp"
-	PROC_NET_TCP      = "/Users/smarin/workspaces/teleport/scratchpad/proc-net-tcp2"
+	PROC_NET_TCP      = "/Users/smarin/workspaces/teleport/scratchpad/proc-net-tcp-test"
 	READ_TCP_INTERVAL = 60
 )
 
