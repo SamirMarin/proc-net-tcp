@@ -9,15 +9,20 @@ import (
 	"time"
 )
 
+const (
+	DATE_FORMAT = "2006-01-02 15:04:05"
+)
+
 type Tcp struct {
 	TimeStamp   time.Time
 	Connections map[string]ProcNetTcp
-	PortScan    PortScan
+	PortScans   map[string]PortScan
 }
 
 type PortScan struct {
-	sourceIP string
-	port     []Port
+	LocalIp  string
+	SourceIP string
+	Ports    map[string]Port
 }
 
 type Port struct {
@@ -33,14 +38,19 @@ type ProcNetTcp struct {
 }
 
 // returns a new tcp connection
-func (t *Tcp) NewTcp(filepath string) (*Tcp, string, error) {
+func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 	connectionsRead, err := readProcNetTcpFile(filepath)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 	timeStamp := time.Now()
 
 	connections := map[string]ProcNetTcp{}
+	portScans := map[string]PortScan{}
+	if len(t.PortScans) > 0 {
+		portScans = t.PortScans
+	}
+
 	for _, connection := range connectionsRead {
 		ipLoc, portLoc := hexToStringIPPort(connection[1])
 		ipRem, portRem := hexToStringIPPort(connection[2])
@@ -52,15 +62,42 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, error) {
 			RemoteAdress: ipRem,
 			RemotePort:   portRem,
 		}
-	}
-	newConnections := t.NewConnections(connections, timeStamp)
 
-	//Todo: port scan logic
+		portScanKey := fmt.Sprintf("%s-%s", ipLoc, ipRem)
+		portScan, ok := portScans[portScanKey]
+
+		if !ok {
+			portScans[portScanKey] = PortScan{
+				LocalIp:  ipLoc,
+				SourceIP: ipRem,
+				Ports: map[string]Port{
+					portLoc: Port{
+						TimeStamp: timeStamp,
+						Port:      portLoc,
+					},
+				},
+			}
+		} else {
+			portScan.Ports[portLoc] = Port{
+				TimeStamp: timeStamp,
+				Port:      portLoc,
+			}
+			portScans[portScanKey] = portScan
+		}
+	}
+
+	newConnections := t.NewConnections(connections, timeStamp)
+	fmt.Println("test")
+	fmt.Println(portScans)
+
+	portScans = cleanOldPorts(60*time.Second, timeStamp, portScans)
+	currentPortScans := findPortScans(portScans, timeStamp)
 
 	return &Tcp{
 		TimeStamp:   timeStamp,
 		Connections: connections,
-	}, newConnections, nil
+		PortScans:   portScans,
+	}, newConnections, currentPortScans, nil
 }
 
 // Finds new connections by comparing previous read values with new values
@@ -71,7 +108,7 @@ func (t *Tcp) NewConnections(connections map[string]ProcNetTcp, timeStamp time.T
 		if !ok {
 			conn := fmt.Sprintf(
 				"%v: New connection: %s:%s -> %s:%s\n",
-				timeStamp,
+				timeStamp.Format(DATE_FORMAT),
 				newConn.RemoteAdress,
 				newConn.RemotePort,
 				newConn.LocalAdress,
@@ -138,4 +175,34 @@ func ipHexDecStr(ip string) string {
 		}
 	}
 	return ipStr
+}
+
+// single source IP connects to more than 3 host ports
+func findPortScans(portScans map[string]PortScan, time time.Time) string {
+	var scans bytes.Buffer
+	for _, portScan := range portScans {
+		if len(portScan.Ports) >= 3 {
+			preFix := fmt.Sprintf("%s: Port scan detected: %s -> %s on ports ", time.Format(DATE_FORMAT), portScan.SourceIP, portScan.LocalIp)
+			for _, port := range portScan.Ports {
+				portStr := fmt.Sprintf("%s%s", preFix, port.Port)
+				scans.WriteString(portStr)
+				preFix = ","
+			}
+			scans.WriteString("\n")
+		}
+	}
+	return scans.String()
+}
+
+// Cleans out port connections that happen over a minute ago
+func cleanOldPorts(timeTresh time.Duration, time time.Time, portScans map[string]PortScan) map[string]PortScan {
+	for _, portScan := range portScans {
+		for key, port := range portScan.Ports {
+			timeExpire := time.Add(-timeTresh)
+			if port.TimeStamp.Before(timeExpire) {
+				delete(portScans, key)
+			}
+		}
+	}
+	return portScans
 }
