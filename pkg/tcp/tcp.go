@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
+	"proc-net-tcp/pkg/prometheus"
 	"strings"
 	"time"
 )
@@ -17,6 +18,7 @@ type Tcp struct {
 	TimeStamp   time.Time
 	Connections map[string]ProcNetTcp
 	PortScans   map[string]PortScan
+	PromClient  *prometheus.PromClient
 }
 
 type PortScan struct {
@@ -44,6 +46,14 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 		return nil, "", "", err
 	}
 	timeStamp := time.Now()
+
+	//set up promClient if not set
+	if t.PromClient == nil {
+		t.PromClient = prometheus.NewPromClient(
+			"proc_net_tcp_new_connections_total",
+			"The total number of new connections",
+		)
+	}
 
 	connections := map[string]ProcNetTcp{}
 	portScans := map[string]PortScan{}
@@ -99,6 +109,7 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 		TimeStamp:   timeStamp,
 		Connections: connections,
 		PortScans:   portScans,
+		PromClient:  t.PromClient,
 	}, newConnections, currentPortScans, nil
 }
 
@@ -117,6 +128,7 @@ func (t *Tcp) NewConnections(connections map[string]ProcNetTcp, timeStamp time.T
 				newConn.LocalPort,
 			)
 			conns.WriteString(conn)
+			t.PromClient.IncToCounter()
 		}
 	}
 	return conns.String()
