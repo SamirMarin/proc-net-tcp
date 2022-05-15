@@ -54,35 +54,39 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 	for _, connection := range connectionsRead {
 		ipLoc, portLoc := hexToStringIPPort(connection[1])
 		ipRem, portRem := hexToStringIPPort(connection[2])
+		connectionState := hexToDec(connection[3])
 		key := fmt.Sprintf("%s:%s-%s:%s", ipLoc, portLoc, ipRem, portRem)
 
-		connections[key] = ProcNetTcp{
-			LocalAdress:  ipLoc,
-			LocalPort:    portLoc,
-			RemoteAdress: ipRem,
-			RemotePort:   portRem,
-		}
+		//considering only established connections
+		if connectionState == "1" {
+			connections[key] = ProcNetTcp{
+				LocalAdress:  ipLoc,
+				LocalPort:    portLoc,
+				RemoteAdress: ipRem,
+				RemotePort:   portRem,
+			}
 
-		portScanKey := fmt.Sprintf("%s-%s", ipLoc, ipRem)
-		portScan, ok := portScans[portScanKey]
+			portScanKey := fmt.Sprintf("%s-%s", ipLoc, ipRem)
+			portScan, ok := portScans[portScanKey]
 
-		if !ok {
-			portScans[portScanKey] = PortScan{
-				LocalIp:  ipLoc,
-				SourceIP: ipRem,
-				Ports: map[string]Port{
-					portLoc: Port{
-						TimeStamp: timeStamp,
-						Port:      portLoc,
+			if !ok {
+				portScans[portScanKey] = PortScan{
+					LocalIp:  ipLoc,
+					SourceIP: ipRem,
+					Ports: map[string]Port{
+						portLoc: Port{
+							TimeStamp: timeStamp,
+							Port:      portLoc,
+						},
 					},
-				},
+				}
+			} else {
+				portScan.Ports[portLoc] = Port{
+					TimeStamp: timeStamp,
+					Port:      portLoc,
+				}
+				portScans[portScanKey] = portScan
 			}
-		} else {
-			portScan.Ports[portLoc] = Port{
-				TimeStamp: timeStamp,
-				Port:      portLoc,
-			}
-			portScans[portScanKey] = portScan
 		}
 	}
 
