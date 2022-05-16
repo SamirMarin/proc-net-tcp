@@ -2,6 +2,7 @@ package tcp
 
 import (
 	"fmt"
+	"proc-net-tcp/pkg/prometheus"
 	"reflect"
 	"sort"
 	"strings"
@@ -208,7 +209,12 @@ func TestNewTcpNoPortScan(t *testing.T) {
 }
 
 func TestNewTcpPortScan(t *testing.T) {
-	prevTcp := Tcp{}
+	prevTcp := Tcp{
+		PromClient: prometheus.NewPromClient(
+			"proc_net_tcp_new_connections_total_2",
+			"The total number of new connections_2",
+		),
+	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")
 	sort.Strings(portScanArr)
@@ -245,6 +251,10 @@ func TestNewTcpPortScanInPrevMin(t *testing.T) {
 				},
 			},
 		},
+		PromClient: prometheus.NewPromClient(
+			"proc_net_tcp_new_connections_total_3",
+			"The total number of new connections_3",
+		),
 	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")
@@ -282,6 +292,10 @@ func TestNewTcpPortScanRemoveLongerThanMin(t *testing.T) {
 				},
 			},
 		},
+		PromClient: prometheus.NewPromClient(
+			"proc_net_tcp_new_connections_total_4",
+			"The total number of new connections_4",
+		),
 	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")
