@@ -214,6 +214,7 @@ func TestNewTcpPortScan(t *testing.T) {
 			"proc_net_tcp_new_connections_total_2",
 			"The total number of new connections_2",
 		),
+		SkipIpBlock: true,
 	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")
@@ -255,6 +256,7 @@ func TestNewTcpPortScanInPrevMin(t *testing.T) {
 			"proc_net_tcp_new_connections_total_3",
 			"The total number of new connections_3",
 		),
+		SkipIpBlock: true,
 	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")
@@ -296,6 +298,7 @@ func TestNewTcpPortScanRemoveLongerThanMin(t *testing.T) {
 			"proc_net_tcp_new_connections_total_4",
 			"The total number of new connections_4",
 		),
+		SkipIpBlock: true,
 	}
 	tcp, _, portScanStr, _ := prevTcp.NewTcp("testdata/proc-net-tcp")
 	portScanArr := strings.Split(portScanStr, "")

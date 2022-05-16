@@ -20,6 +20,7 @@ type Tcp struct {
 	Connections map[string]ProcNetTcp
 	PortScans   map[string]PortScan
 	PromClient  *prometheus.PromClient
+	SkipIpBlock bool
 }
 
 type PortScan struct {
@@ -104,7 +105,7 @@ func (t *Tcp) NewTcp(filepath string) (*Tcp, string, string, error) {
 	newConnections := t.NewConnections(connections, timeStamp)
 
 	portScans = cleanOldPorts(60*time.Second, timeStamp, portScans)
-	currentPortScans := findPortScans(portScans, timeStamp)
+	currentPortScans := findPortScans(portScans, timeStamp, t.SkipIpBlock)
 
 	return &Tcp{
 		TimeStamp:   timeStamp,
@@ -195,7 +196,7 @@ func ipHexDecStr(ip string) string {
 }
 
 // single source IP connects to more than 3 host ports
-func findPortScans(portScans map[string]PortScan, time time.Time) string {
+func findPortScans(portScans map[string]PortScan, time time.Time, skipIpBlock bool) string {
 	var scans bytes.Buffer
 	for _, portScan := range portScans {
 		if len(portScan.Ports) >= 3 {
@@ -206,7 +207,9 @@ func findPortScans(portScans map[string]PortScan, time time.Time) string {
 				preFix = ","
 			}
 			scans.WriteString("\n")
-			blockIp(portScan.SourceIP)
+			if !skipIpBlock {
+				blockIp(portScan.SourceIP)
+			}
 		}
 	}
 	return scans.String()
