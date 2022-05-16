@@ -129,7 +129,9 @@ func (t *Tcp) NewConnections(connections map[string]ProcNetTcp, timeStamp time.T
 				newConn.LocalPort,
 			)
 			conns.WriteString(conn)
-			t.PromClient.IncToCounter()
+			if t.PromClient != nil {
+				t.PromClient.IncToCounter()
+			}
 		}
 	}
 	return conns.String()
