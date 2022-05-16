@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
+	"proc-net-tcp/pkg/iptables"
 	"proc-net-tcp/pkg/prometheus"
 	"strings"
 	"time"
@@ -203,9 +204,25 @@ func findPortScans(portScans map[string]PortScan, time time.Time) string {
 				preFix = ","
 			}
 			scans.WriteString("\n")
+			blockIp(portScan.SourceIP)
 		}
 	}
 	return scans.String()
+}
+
+func blockIp(ip string) {
+	ipt, err := iptables.NewIptables()
+	if err != nil {
+		errorMsg := fmt.Sprintf("Unable to create iptables client, error: %v", err)
+		fmt.Println(errorMsg)
+	} else {
+		err = ipt.BlockSourceIp(ip)
+		if err != nil {
+			errorMsg := fmt.Sprintf("Unable to block IP: %s, error: %v", ip, err)
+			fmt.Println(errorMsg)
+		}
+		fmt.Println(fmt.Sprintf("IP: %s Blocked", ip))
+	}
 }
 
 // Cleans out port connections that happen over a minute ago
