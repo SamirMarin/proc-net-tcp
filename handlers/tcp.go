@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"proc-net-tcp/pkg/tcp"
 	"time"
+
+	"github.com/SamirMarin/proc-net-tcp/pkg/tcp"
 )
 
 const (

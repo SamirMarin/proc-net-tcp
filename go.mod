@@ -1,4 +1,4 @@
-module proc-net-tcp
+module github.com/SamirMarin/proc-net-tcp
 
 go 1.17
 

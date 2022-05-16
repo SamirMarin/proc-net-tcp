@@ -1,8 +1,7 @@
 package main
 
 import (
-	"proc-net-tcp/handlers"
-
+	"github.com/SamirMarin/proc-net-tcp/handlers"
 	"github.com/labstack/echo/v4"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

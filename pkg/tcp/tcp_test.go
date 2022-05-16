@@ -2,12 +2,13 @@ package tcp
 
 import (
 	"fmt"
-	"proc-net-tcp/pkg/prometheus"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/SamirMarin/proc-net-tcp/pkg/prometheus"
 )
 
 func TestReadProcNetFileNotFound(t *testing.T) {

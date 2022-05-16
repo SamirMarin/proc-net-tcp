@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"proc-net-tcp/pkg/iptables"
-	"proc-net-tcp/pkg/prometheus"
 	"strings"
 	"time"
+
+	"github.com/SamirMarin/proc-net-tcp/pkg/iptables"
+	"github.com/SamirMarin/proc-net-tcp/pkg/prometheus"
 )
 
 const (
