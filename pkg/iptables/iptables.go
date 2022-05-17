@@ -32,6 +32,6 @@ func NewIptables(params ...string) (*IptablesClient, error) {
 }
 
 func (ic *IptablesClient) BlockSourceIp(ip string) error {
-	err := ic.Iptables.Append(ic.TableName, ic.Chain, "-S", ip, "-j", "REJECT")
+	err := ic.Iptables.Append(ic.TableName, ic.Chain, "-s", ip, "-j", "REJECT")
 	return err
 }

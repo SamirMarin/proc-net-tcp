@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PROC_NET_TCP      = "/proc-net-tcp/tcp"
+	PROC_NET_TCP      = "/proc/net/tcp"
 	READ_TCP_INTERVAL = 10
 )
 

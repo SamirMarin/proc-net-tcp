@@ -4,6 +4,8 @@ RUN mkdir -p /proc-net-tcp
 WORKDIR /proc-net-tcp
 COPY . /proc-net-tcp
 
+RUN apk add --no-cache iptables ip6tables
+
 RUN CGO_ENABLED=0 go build -o /bin/proc-net-tcp cmd/tcp/main.go
 
 EXPOSE 8080
