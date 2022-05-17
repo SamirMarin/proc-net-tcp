@@ -4,9 +4,15 @@ Reads /proc/net/tcp every 10 seconds and outputs any new connections
 
 ## How to build and run 
 
-Program was tested using golang 1.17
+Uses golang 1.17
 
-Ran on amazon/linux ec2
+Tested on amazon/linux ec2
+
+### run using docker
+
+```
+make docker-run
+```
 
 ### run directly
 
@@ -16,26 +22,22 @@ make build
 ./main
 ```
 
-To run test
+### run test
 
 ```
 make test
 ```
 
 
-### run using docker
+## Server
 
-```
-make docker-run
-```
+- listens on port 8080 
 
+- Reads [/proc/net/tcp](https://github.com/SamirMarin/proc-net-tcp/blob/ebd15e9edc16222ac80be6862845460e519b7165/handlers/tcp.go#L11) every [10 seconds](https://github.com/SamirMarin/proc-net-tcp/blob/ebd15e9edc16222ac80be6862845460e519b7165/handlers/tcp.go#L12)
 
-### Server
+- Blocks source IP when port scan is [detected](https://github.com/SamirMarin/proc-net-tcp/blob/ebd15e9edc16222ac80be6862845460e519b7165/pkg/tcp/tcp.go#L203)
 
-the server listens on port 8080 
+### endpoints
+- /metrics ---> [Counter - number of new connections](https://github.com/SamirMarin/proc-net-tcp/blob/ebd15e9edc16222ac80be6862845460e519b7165/pkg/tcp/tcp.go#L135)
 
-/metrics ---> Counter - number of new connections
-
-/health ---> health check
-
-server reads `proc/net/tcp` every 10 seconds outputs new connections, blocks IPs where port scan is detected
+- /health ---> health check
