@@ -39,4 +39,3 @@ the server listens on port 8080
 /health ---> health check
 
 server reads `proc/net/tcp` every 10 seconds outputs new connections, blocks IPs where port scan is detected
-
